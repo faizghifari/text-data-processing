@@ -1,0 +1,158 @@
+#FORMAT=Datasaur TSV 3
+
+#Text=Saya sangat kecewa , udah lama saya menggunakan aplikasi grab ini tapi kenapa dengan paket langganan bike - nya dihapus kan . Tolong dong dengan keadaan seperti ini mau nya jangan dipersulit , kalo gini kan jadi susah kita nya
+2-1	352-356	Saya	_	_	_	_	_
+2-2	357-363	sangat	_	reason[7]	*	[10_7]	_
+2-3	364-370	kecewa	_	reason[7]	_	_	_
+2-4	371-372	,	_	_	_	_	_
+2-5	373-377	udah	_	_	_	_	_
+2-6	378-382	lama	_	_	_	_	_
+2-7	383-387	saya	_	_	_	_	_
+2-8	388-399	menggunakan	_	_	_	_	_
+2-9	400-408	aplikasi	_	_	_	_	_
+2-10	409-413	grab	_	konsep[8]	_	_	_
+2-11	414-417	ini	_	_	_	_	_
+2-12	418-422	tapi	_	_	_	_	_
+2-13	423-429	kenapa	_	_	_	_	_
+2-14	430-436	dengan	_	_	_	_	_
+2-15	437-442	paket	_	reason[9]	*	[10_9]	_
+2-16	443-452	langganan	_	reason[9]	_	_	_
+2-17	453-457	bike	_	reason[9]	_	_	_
+2-18	458-459	-	_	reason[9]	_	_	_
+2-19	460-463	nya	_	reason[9]	_	_	_
+2-20	464-471	dihapus	_	reason[9]	_	_	_
+2-21	472-475	kan	_	reason[9]	_	_	_
+2-22	476-477	.	_	reason[9]	_	_	_
+2-23	478-484	Tolong	_	suggestion[10]	*	[8_10]	_
+2-24	485-489	dong	_	suggestion[10]	_	_	_
+2-25	490-496	dengan	_	suggestion[10]	_	_	_
+2-26	497-504	keadaan	_	suggestion[10]	_	_	_
+2-27	505-512	seperti	_	suggestion[10]	_	_	_
+2-28	513-516	ini	_	suggestion[10]	_	_	_
+2-29	517-520	mau	_	suggestion[10]	_	_	_
+2-30	521-524	nya	_	suggestion[10]	_	_	_
+2-31	525-531	jangan	_	suggestion[10]	_	_	_
+2-32	532-542	dipersulit	_	suggestion[10]	_	_	_
+2-33	543-544	,	_	_	_	_	_
+2-34	545-549	kalo	_	_	_	_	_
+2-35	550-554	gini	_	_	_	_	_
+2-36	555-558	kan	_	_	_	_	_
+2-37	559-563	jadi	_	reason[11]	*	[10_11]	_
+2-38	564-569	susah	_	reason[11]	_	_	_
+2-39	570-574	kita	_	_	_	_	_
+2-40	575-578	nya	_	_	_	_	_
+
+#Text=Anak saya tidak terlalu suka dengan vitamin berbentuk gummy bear seperti sakatonik ABC karena rasa nya yang terlalu manis .
+1-1	0-4	Anak	_	_	_	_	_
+1-2	5-9	saya	_	_	_	_	_
+1-3	10-15	tidak	_	negatif[3]	*	[5_3]	_
+1-4	16-23	terlalu	_	negatif[3]	_	_	_
+1-5	24-28	suka	_	negatif[3]	_	_	_
+1-6	29-35	dengan	_	_	_	_	_
+1-7	36-43	vitamin	_	_	_	_	_
+1-8	44-53	berbentuk	_	_	_	_	_
+1-9	54-59	gummy	_	_	_	_	_
+1-10	60-64	bear	_	_	_	_	_
+1-11	65-72	seperti	_	_	_	_	_
+1-12	73-82	sakatonik	_	konsep[4]	_	_	_
+1-13	83-86	ABC	_	konsep[5]	*	[4_5]	_
+1-14	87-93	karena	_	_	_	_	_
+1-15	94-98	rasa	_	konsep[1]	*	[5_1]	_
+1-16	99-102	nya	_	_	_	_	_
+1-17	103-107	yang	_	_	_	_	_
+1-18	108-115	terlalu	_	negatif[2]	*	[1_2]	_
+1-19	116-121	manis	_	negatif[2]	_	_	_
+1-20	122-123	.	_	_	_	_	_
+
+#Text=Tiati jis , abang nya galak . Dan jadi driver gocar pula .
+2-1	304-309	Tiati	_	_	_	_	_
+2-2	310-313	jis	_	_	_	_	_
+2-3	314-315	,	_	_	_	_	_
+2-4	316-321	abang	_	positif[11]	*	2-11[8_11]	_
+2-5	322-325	nya	_	_	_	_	_
+2-6	326-331	galak	_	negatif[10]	*	2-10[9_10]	_
+2-7	332-333	.	_	_	_	_	_
+2-8	334-337	Dan	_	_	_	_	_
+2-9	338-342	jadi	_	_	_	_	_
+2-10	343-349	driver	_	konsep[9]	*	2-11[8_9]	_
+2-11	350-355	gocar	_	konsep[8]	_	_	_
+2-12	356-360	pula	_	_	_	_	_
+2-13	361-362	.	_	_	_	_	_
+
+#Text=Dapet driver gocar galak amat .
+3-1	364-369	Dapet	_	_	_	_	_
+3-2	370-376	driver	_	konsep[11]	_	_	_
+3-3	377-382	gocar	_	konsep[12]	*	3-2[11_12]	_
+3-4	383-388	galak	_	negatif[13]	*	3-3[12_13]	_
+3-5	389-393	amat	_	negatif[13]	_	_	_
+3-6	394-395	.	_	_	_	_	_
+
+#Text=panas banget pake neo rheumacyl , tapi kalo gapake leher sakit banget -_-
+12-1	953-958	panas	_	negatif[37]	*	[38_37]	_
+12-2	959-965	banget	_	negatif[37]	_	_	_
+12-3	966-970	pake	_	konsep[38]	*	[39_38]	_
+12-4	971-974	neo	_	konsep[39]	_	_	_
+12-5	975-984	rheumacyl	_	konsep[39]	_	_	_
+12-6	985-986	,	_	_	_	_	_
+12-7	987-991	tapi	_	_	_	_	_
+12-8	992-996	kalo	_	_	_	_	_
+12-9	997-1003	gapake	_	_	_	_	_
+12-10	1004-1009	leher	_	_	_	_	_
+12-11	1010-1015	sakit	_	_	_	_	_
+12-12	1016-1022	banget	_	_	_	_	_
+12-13	1023-1026	-_-	_	_	_	_	_
+
+#Text=Perkiraan harga hp yang mau ditukar tambah parah banget , gak seperti aplikasi sebelah masih masuk akal masak redmi note 7 dihargai 980an parah .
+21-1	2942-2951	Perkiraan	_	konsep[96]	*	[93_96]	_
+21-2	2952-2957	harga	_	konsep[96]	_	_	_
+21-3	2958-2960	hp	_	konsep[96]	_	_	_
+21-4	2961-2965	yang	_	_	_	_	_
+21-5	2966-2969	mau	_	_	_	_	_
+21-6	2970-2977	ditukar	_	_	_	_	_
+21-7	2978-2984	tambah	_	_	_	_	_
+21-8	2985-2990	parah	_	negatif[94]	*	[96_94]	_
+21-9	2991-2997	banget	_	negatif[94]	_	_	_
+21-10	2998-2999	,	_	_	_	_	_
+21-11	3000-3003	gak	_	_	_	_	_
+21-12	3004-3011	seperti	_	_	_	_	_
+21-13	3012-3020	aplikasi	_	konsep[93]	_	_	_
+21-14	3021-3028	sebelah	_	_	_	_	_
+21-15	3029-3034	masih	_	_	_	_	_
+21-16	3035-3040	masuk	_	positif[98]	*	[97_98]	_
+21-17	3041-3045	akal	_	positif[98]	_	_	_
+21-18	3046-3051	masak	_	_	_	_	_
+21-19	3052-3057	redmi	_	konsep[97]	_	_	_
+21-20	3058-3062	note	_	konsep[97]	_	_	_
+21-21	3063-3064	7	_	konsep[97]	_	_	_
+21-22	3065-3073	dihargai	_	_	_	_	_
+21-23	3074-3079	980an	_	_	_	_	_
+21-24	3080-3085	parah	_	negatif[95]	*	[97_95]	_
+21-25	3086-3087	.	_	_	_	_	_
+
+#Text=@milkyfirman vit A IPI rasa nya aneh ya kalo yang C enak
+413-1	44234-44246	@milkyfirman	_	_	_	_	_
+413-2	44247-44250	vit	_	_	_	_	_
+413-3	44251-44252	A	_	konsep[1507]	*	[1506_1507]	_
+413-4	44253-44256	IPI	_	konsep[1506]	_	_	_
+413-5	44257-44261	rasa	_	konsep[1510]	*|*	[1507_1510]|[1508_1510]	_
+413-6	44262-44265	nya	_	_	_	_	_
+413-7	44266-44270	aneh	_	negatif[1511]	*	[1510_1511]	_
+413-8	44271-44273	ya	_	_	_	_	_
+413-9	44274-44278	kalo	_	_	_	_	_
+413-10	44279-44283	yang	_	_	_	_	_
+413-11	44284-44285	C	_	konsep[1508]	*	[1506_1508]	_
+413-12	44286-44290	enak	_	_	_	_	_
+
+#Text=Pasien Positif Covid - 19 Termuda di Sulut asal Kecamatan Kawangkoan Min
+236-1	32846-32852	Pasien	_	_	_	_	_
+236-2	32853-32860	Positif	_	_	_	_	_
+236-3	32861-32866	Covid	_	_	_	_	_
+236-4	32867-32868	-	_	_	_	_	_
+236-5	32869-32871	19	_	_	_	_	_
+236-6	32872-32879	Termuda	_	_	_	_	_
+236-7	32880-32882	di	_	_	_	_	_
+236-8	32883-32888	Sulut	_	_	_	_	_
+236-9	32889-32893	asal	_	_	_	_	_
+236-10	32894-32903	Kecamatan	_	_	_	_	_
+236-11	32904-32914	Kawangkoan	_	_	_	_	_
+236-12	32915-32918	Min	_	_	_	_	_
