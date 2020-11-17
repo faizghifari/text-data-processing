@@ -1,5 +1,9 @@
+import os
 import json
 import glob
+
+import argparse
+import csv
 
 def read_files(file_list):
 	all_lines = []
@@ -73,12 +77,14 @@ def specific_info(data, info):
 					
 					temp[group_idx]['word_index'] = [word_idx]
 
-					connected_group = d[6].split('_')[0]
-					if connected_group != '':
-						connected_group = connected_group.split('[')[1]
-						temp[group_idx]['connected_to'] = int(connected_group)
-					else:
-						temp[group_idx]['connected_to'] = -1
+					c_group = []
+					connected_groups = d[6].split('|')
+					for c in connected_groups:
+						connected_group = c.split('_')[0]
+						if connected_group != '':
+							connected_group = connected_group.split('[')[1]
+							c_group.append(int(connected_group))
+					temp[group_idx]['connected_to'] = c_group
 
 				else:
 					group_idx = prev_group.index(group)
@@ -97,582 +103,229 @@ def specific_info(data, info):
 
 	return temp
 
-def get_concept(data, return_index=False, remove_deriv=False):
-	temp = {}
-	raw_temp = specific_info(data, 'konsep')
-
-	if remove_deriv:
-		removed = []
-		for t in raw_temp:
-			if t['connected_to'] != -1:
-				target = t['connected_to']
-				temp_target = None
-				for t2 in raw_temp:
-					if t2['group'] == target:
-						temp_target = t2
-						break
-				if temp_target is None:
-					removed.append(t)
-					continue
-				idx = t['word_index'][0]
-				ref_idx = temp_target['word_index'][0]
-				if ref_idx != idx+1 and ref_idx != idx-1:
-					removed.append(t)
-		for r in removed:
-			raw_temp.remove(r)
-
-	temp['konsep'] = raw_temp
-
+def get_relation_csug(data, split_data):
 	concepts = []
-	concept_idx = []
-	try:
-		for info_group in temp:
-			for info in temp[info_group]:
-				id = info['id']
-				group = info['group']
-				name = info['name']
-				word_idx = info['word_index']
-				connect = info['connected_to']
+	concepts.extend(specific_info(data, 'target'))
+	concepts.extend(specific_info(data, 'object'))
 
-				for i in word_idx:
-					concept_idx.append(i)
+	suggestion = specific_info(data, 'suggestion')
 
-				concepts.append([name, word_idx, group, id, connect])
-	
-	except IndexError:
-		print('Data not found')
-	
-	if return_index:
-		return concepts, concept_idx
-	else:
-		return concepts
-
-def get_sentiment(data, return_index=False):
-	senti = {}
-	senti['positif'] = specific_info(data, 'positif')
-	senti['negatif'] = specific_info(data, 'negatif')
-
-	# join sentiment
-	sentiments = []
-	sentiment_idx = []
-	for label in senti:
-		for _senti in senti[label]:
-			if len(_senti) != 0:
-				group = _senti['group']
-				aspect = _senti['aspect']
-				target = _senti['connected_to']
-				word_idx = _senti['word_index']
-
-				for i in word_idx:
-					sentiment_idx.append(i)
-				
-				sentiments.append([aspect, word_idx, target, group])
-	
-	if return_index:
-		return sentiments, sentiment_idx
-	else:
-		return sentiments
-
-def get_concept_sentiment(concept, concepts, sentiments):
-	concept_senti = []
-
-	try:
-		for senti in sentiments:
-			if senti[2] == concept[2]:
-				concept_senti.append(senti[0])
-		
-		for c in concepts:
-			if concept[2] == c[4]:
-				concept_senti.extend(get_concept_sentiment(c, concepts, sentiments))
-	except RecursionError:
-		print(f'CONCEPT: {concept}')
-		print(f'CONCEPTS: {concepts}')
-		print(f'SENTIMENTS: {sentiments}')
-		raise KeyboardInterrupt('ERROR')
-	
-	return concept_senti
-
-def get_predecessors_c(concept, concepts):
-	result = []
-
-	try:
-		for c in concepts:
-			if concept[4] == c[2]:
-				result.append(c)
-				if c[4] != -1:
-					result.extend(get_predecessors_c(c, concepts))
-	except RecursionError:
-		print(f'CONCEPT: {concept}')
-		print(f'CONCEPTS: {concepts}')
-
-	return result
-
-def get_successors_s(sentiment, sentiments):
-	result = []
-
-	try:
-		for s in sentiments:
-			if sentiment[3] == s[2]:
-				result.append(s)
-	except RecursionError:
-		print(f'SENTIMENT: {sentiment}')
-		print(f'SENTIMENTS: {sentiments}')
-	
-	return result
-
-def extract_relation_c(data, split_data):
-	concepts = get_concept(data)
-
-	result = []
-	for c_ref in concepts:
-		if c_ref[4] != -1:
-			for c_target in concepts:
-				if c_target != c_ref:
-					temp_text = []
-					for index, text in enumerate(split_data):
-						if index in c_ref[1]:
-							temp_text.append('[CONCEPT_1]')
-						elif index in c_target[1]:
-							temp_text.append('[CONCEPT_2]')
-						else:
-							temp_text.append(text)
-					
-					text = ' '.join(temp_text)
-
-					if c_target[2] == c_ref[4]:
-						result.append([text, 1])
-					else:
-						result.append([text, 0])
-		
-	return result
-
-def extract_relation_s(data, split_data):
-	concepts = get_concept(data)
-	sentiments = get_sentiment(data)
-
-	result = []
-	for s in sentiments:
+	results = []
+	for s in suggestion:
 		for c in concepts:
 			temp_text = []
-			
-			predecessors = get_predecessors_c(c, concepts)
-			concept_idx = c[1]
-			for p in predecessors:
-				concept_idx.extend(p[1])
-
 			for index, text in enumerate(split_data):
-				if index in s[1]:
-					temp_text.append('[SENTIMENT]')
-				elif index in concept_idx:
+				if index in s['word_index']:
+					temp_text.append('[SUGGESTION]')
+				elif index in c['word_index']:
 					temp_text.append('[CONCEPT]')
 				else:
 					temp_text.append(text)
 			
 			text = ' '.join(temp_text)
 
-			if s[2] == c[2]:
-				result.append([text, 1])
+			if s['connected_to'] == c['group']:
+				results.append([text, 1])
 			else:
-				result.append([text, 0])
+				results.append([text, 0])
 
-	return result
+	return results
 
-def extract_posneg(data, split_data, remove_deriv=True):
-	concepts = get_concept(data)
-	sentiments = get_sentiment(data)
+def get_relation_cs(data, split_data):
+	concepts = []
+	concepts.extend(specific_info(data, 'aspect'))
+	concepts.extend(specific_info(data, 'target'))
+	concepts.extend(specific_info(data, 'object'))
 
-	result = []
-	if len(sentiments) > 0:
-		for concept in concepts:
-			if remove_deriv:
-				if concept[4] != -1:
-					continue
+	sentiments = []
+	sentiments.extend(specific_info(data, 'positif'))
+	sentiments.extend(specific_info(data, 'negatif'))
 
-			tmp_text = []
-			
-			concept_senti = get_concept_sentiment(concept, concepts, sentiments)
-
-			count_neg = concept_senti.count('negatif')
-			count_pos = concept_senti.count('positif')
-
-			for c in concepts:
-				if c[4] != -1 and c[4] == concept[2]:
-					if c[1][-1] == concept[1][0]-1:
-						temp = c[1]
-						temp.extend(concept[1])
-						concept[1] = temp
-					elif c[1][0] == concept[1][-1]+1:
-						concept[1].extend(c[1])
-
+	results = []
+	for s in sentiments:
+		for c in concepts:
+			temp_text = []
 			for index, text in enumerate(split_data):
-				if index in concept[1]:
-					tmp_text.append('[CONCEPT]')
+				if index in s['word_index']:
+					temp_text.append('[SENTIMENT]')
+				elif index in c['word_index']:
+					temp_text.append('[CONCEPT]')
 				else:
-					tmp_text.append(text)
+					temp_text.append(text)
 			
-			text_result = ' '.join(tmp_text)
-			if count_pos == 0:
-				result.append([text_result, 0])
-			elif count_neg == 0:
-				result.append([text_result, 1])
+			text = ' '.join(temp_text)
+
+			if s['connected_to'] == c['group']:
+				results.append([text, 1])
 			else:
-				result.append([text_result, 2])
+				results.append([text, 0])
 
-	return result
+	return results
 
-def extract_posneg_v2(data, split_data):
+def get_relation_at(data, split_data):
+	aspects = specific_info(data, 'aspect')
+	targets = specific_info(data, 'target')
 
-	def add_data():
-		nonlocal result
-		for index, text in enumerate(split_data):
-			if index in sentiment_idx:
-				tmp_text.append('[SENTIMENT]')
-			elif index in concept_idx:
-				tmp_text.append('[CONCEPT]')
+	results = []
+	for a in aspects:
+		for t in targets:
+			temp_text = []
+			for index, text in enumerate(split_data):
+				if index in a['word_index']:
+					temp_text.append('[ASPECT]')
+				elif index in t['word_index']:
+					temp_text.append('[TARGET]')
+				else:
+					temp_text.append(text)
+			
+			text = ' '.join(temp_text)
+
+			if a['connected_to'] == t['group']:
+				results.append([text, 1])
 			else:
-				tmp_text.append(text)
-		
-		text_result = ' '.join(tmp_text)
-		if s[0] == 'negatif':
-			result.append([text_result, 0])
-		else:
-			result.append([text_result, 1])
-
-	concepts = get_concept(data)
-	sentiments = get_sentiment(data)
-
-	result = []
-	if len(sentiments) > 0:
-		for c in concepts:
-			for s in sentiments:
-				if s[2] == c[2]:
-					tmp_text = []
-
-					predecessors = get_predecessors_c(c, concepts)
-					concept_idx = c[1]
-					for p in predecessors:
-						concept_idx.extend(p[1])
-
-					successors = get_successors_s(s, sentiments)
-					sentiment_idx = s[1]
-					if len(successors) > 0:
-						for suc in successors:
-							sentiment_idx.extend(suc[1])
-							add_data()
-					else:
-						add_data()
+				results.append([text, 0])
 	
-	result = set(tuple(r) for r in result)
-	result = [list(r) for r in result]
+	return results
 
-	return result
+def get_relation_to(data, split_data):
+	targets = specific_info(data, 'target')
+	objects = specific_info(data, 'object')
 
-def extract_posneg_kukt(data, split_data):
+	results = []
+	for t in targets:
+		for o in objects:
+			temp_text = []
+			for index, text in enumerate(split_data):
+				if index in t['word_index']:
+					temp_text.append('[TARGET]')
+				elif index in o['word_index']:
+					temp_text.append('[OBJECT]')
+				else:
+					temp_text.append(text)
+			
+			text = ' '.join(temp_text)
 
-	def add_data():
-		nonlocal result
-		for index, text in enumerate(split_data):
-			if index in concept_idx:
-				tmp_text.append('[CONCEPT]')
+			if t['connected_to'] == o['group']:
+				results.append([text, 1])
 			else:
-				tmp_text.append(text)
-		
-		text_result = ' '.join(tmp_text)
-		if s[0] == 'negatif':
-			result.append([text_result, 0])
-		else:
-			result.append([text_result, 1])
-
-	concepts = get_concept(data)
-	sentiments = get_sentiment(data)
-
-	result = []
-	if len(sentiments) > 0:
-		for c in concepts:
-			for s in sentiments:
-				if s[2] == c[2]:
-					tmp_text = []
-
-					predecessors = get_predecessors_c(c, concepts)
-					concept_idx = c[1]
-					for p in predecessors:
-						concept_idx.extend(p[1])
-					add_data()
+				results.append([text, 0])
 	
-	result = set(tuple(r) for r in result)
-	result = [list(r) for r in result]
+	return results
 
-	return result
+def get_relation_sug_res(data, split_data):
+	reason = specific_info(data, 'reason')
+	suggestion = specific_info(data, 'suggestion')
 
-def extract_token_c_s_c(data, split_data, remove_deriv=True):
-	concepts = get_concept(data, remove_deriv=remove_deriv)
-	sentiments = get_sentiment(data)
+	results = []
+	for r in reason:
+		for s in suggestion:
+			temp_text = []
 
-	mix_idx = []
-	pos_idx = []
-	neg_idx = []
-	if len(sentiments) > 0:
-		for c in concepts:
-			concept_senti = get_concept_sentiment(c, concepts, sentiments)
-			count_neg = concept_senti.count('negatif')
-			count_pos = concept_senti.count('positif')
+			s_idx = s['word_index']
+			r_idx = r['word_index']
+			for idx, text in enumerate(split_data):
+				if idx in s_idx:
+					temp_text.append('[SUGGESTION]')
+				elif idx in r_idx:
+					temp_text.append('[REASON]')
+				else:
+					temp_text.append(text)
+			text = ' '.join(temp_text)
 
-			if count_pos == 0:
-				neg_idx.extend(c[1])
-			elif count_neg == 0:
-				pos_idx.extend(c[1])
+			if r['connected_to'] == s['group']:
+				results.append([text, 1])
 			else:
-				mix_idx.extend(c[1])
+				results.append([text, 0])
+
+	return results
+
+def extract_token(data, split_data, label):
+	labels = specific_info(data, label)
+
+	labels_idx = []
+	for l in labels:
+		labels_idx.extend(l['word_index'])
 	
-	head_p = True
-	head_n = True
-	head_m = True
+	head = True
 	token_label = []
 	temp_text = []
-
 	for index, text in enumerate(split_data):
 		temp_text.append(text)
-		if index in pos_idx:
-			if head_p:
+		if index in labels_idx:
+			if head:
 				token_label.append(2)
-				head_p = False
+				head = False
 			else:
 				token_label.append(1)
-			head_n = True
-			head_m = True
-		elif index in neg_idx:
-			if head_n:
+		else:
+			token_label.append(0)
+			head = True
+	
+	results = []
+	text_result = ' '.join(temp_text)
+	results.append([text_result, token_label])
+
+	return results
+
+def extract_all_entity(data, split_data):
+	aspects = specific_info(data, 'aspect')
+	targets = specific_info(data, 'target')
+	objects = specific_info(data, 'object')
+
+	aspect_idx = []
+	for a in aspects:
+		aspect_idx.extend(a['word_index'])
+	
+	target_idx = []
+	for t in targets:
+		target_idx.extend(t['word_index'])
+	
+	object_idx = []
+	for o in objects:
+		object_idx.extend(o['word_index'])
+	
+	head_a = True
+	head_t = True
+	head_o = True
+	token_label = []
+	temp_text = []
+	for index, text in enumerate(split_data):
+		temp_text.append(text)
+		if index in aspect_idx:
+			if head_a:
+				token_label.append(2)
+				head_a = False
+			else:
+				token_label.append(1)
+			head_t = True
+			head_o = True
+		elif index in target_idx:
+			if head_t:
 				token_label.append(4)
-				head_n = False
+				head_t = False
 			else:
 				token_label.append(3)
-			head_p = True
-			head_m = True
-		elif index in mix_idx:
-			if head_m:
+			head_a = True
+			head_o = True
+		elif index in object_idx:
+			if head_o:
 				token_label.append(6)
-				head_m = False
+				head_o = False
 			else:
 				token_label.append(5)
-			head_n = True
-			head_p = True
+			head_a = True
+			head_t = True
 		else:
 			token_label.append(0)
-			head_p = True
-			head_n = True
-			head_m = True
-
-	result = []
+			head_a = True
+			head_t = True
+			head_o = True
+	
+	results = []
 	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
+	results.append([text_result, token_label])
 
-	return result
-
-def extract_token_c(data, split_data):
-	_, concept_idx = get_concept(data, return_index=True, remove_deriv=True)
-	
-	head = True
-	token_label = []
-	temp_text = []
-	for index, text in enumerate(split_data):
-		temp_text.append(text)
-		if index in concept_idx:
-			if head:
-				token_label.append(2)
-				head = False
-			else:
-				token_label.append(1)
-		else:
-			token_label.append(0)
-			head = True
-	
-	result = []
-	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
-
-	return result
-
-def extract_token_c_v2(data, split_data):
-	concepts, concept_idx = get_concept(data, return_index=True)
-	
-	head_cm = True
-	head_cd = True
-	token_label = []
-	temp_text = []
-	for index, text in enumerate(split_data):
-		temp_text.append(text)
-		if index in concept_idx:
-			for concept in concepts:
-				if index in concept[1]:
-					if concept[4] == -1:
-						if head_cm:
-							token_label.append(2)
-							head_cm = False
-						else:
-							token_label.append(1)
-						head_cd = True
-					else:
-						if head_cd:
-							token_label.append(4)
-							head_cd = False
-						else:
-							token_label.append(3)
-						head_cm = True
-		else:
-			token_label.append(0)
-			head_cm = True
-			head_cd = True
-
-	result = []
-	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
-
-	return result
-
-def extract_token_s(data, split_data):
-	sentiments, sentiment_idx = get_sentiment(data, return_index=True)
-	
-	head_p = True
-	head_n = True
-	token_label = []
-	temp_text = []
-	for index, text in enumerate(split_data):
-		temp_text.append(text)
-		if index in sentiment_idx:
-			for sentiment in sentiments:
-				if index in sentiment[1]:
-					if sentiment[0] == 'positif':
-						if head_p:
-							token_label.append(2)
-							head_p = False
-						else:
-							token_label.append(1)
-					else:
-						if head_n:
-							token_label.append(2)
-							head_n = False
-						else:
-							token_label.append(1)
-		else:
-			token_label.append(0)
-			head_p = True
-			head_n = True
-
-	result = []
-	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
-
-	return result
-
-def extract_token_c_s(data, split_data):
-	_, concept_idx = get_concept(data, return_index=True, remove_deriv=True)
-	sentiments, sentiment_idx = get_sentiment(data, return_index=True)
-	
-	head_c = True
-	head_p = True
-	head_n = True
-	token_label = []
-	temp_text = []
-	for index, text in enumerate(split_data):
-		temp_text.append(text)
-		if index in concept_idx:
-			if head_c:
-				token_label.append(2)
-				head_c = False
-			else:
-				token_label.append(1)
-			head_p = True
-			head_n = True
-		elif index in sentiment_idx:
-			for sentiment in sentiments:
-				if index in sentiment[1]:
-					if sentiment[0] == 'positif':
-						if head_p:
-							token_label.append(4)
-							head_p = False
-						else:
-							token_label.append(3)
-						head_n = True
-					else:
-						if head_n:
-							token_label.append(6)
-							head_n = False
-						else:
-							token_label.append(5)
-						head_p = True
-			head_c = True
-			# if head_s:
-			# 	token_label.append(4)
-			# 	head_s = False
-			# else:
-			# 	token_label.append(3)
-		else:
-			token_label.append(0)
-			head_c = True
-			head_p = True
-			head_n = True
-
-	result = []
-	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
-
-	return result
-
-def extract_reason(data, split_data):
-	reason = specific_info(data, 'reason')
-	
-	reason_idx = []
-	for r in reason:
-		reason_idx.extend(r['word_index'])
-
-	head = True
-	token_label = []
-	temp_text = []
-	for index, text in enumerate(split_data):
-		temp_text.append(text)
-		if index in reason_idx:
-			if head:
-				token_label.append(2)
-				head = False
-			else:
-				token_label.append(1)
-		else:
-			token_label.append(0)
-			head = True
-	
-	result = []
-	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
-
-	return result
-
-def extract_suggestion(data, split_data):
-	suggestion = specific_info(data, 'suggestion')
-	
-	suggestion_idx = []
-	for s in suggestion:
-		suggestion_idx.extend(s['word_index'])
-
-	head = True
-	token_label = []
-	temp_text = []
-	for index, text in enumerate(split_data):
-		temp_text.append(text)
-		if index in suggestion_idx:
-			if head:
-				token_label.append(2)
-				head = False
-			else:
-				token_label.append(1)
-		else:
-			token_label.append(0)
-			head = True
-	
-	result = []
-	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
-
-	return result
+	return results
 
 def extract_sug_reason(data, split_data):
 	reason = specific_info(data, 'reason')
@@ -711,25 +364,11 @@ def extract_sug_reason(data, split_data):
 			head_s = True
 			head_r = True
 	
-	result = []
+	results = []
 	text_result = ' '.join(temp_text)
-	result.append([text_result, token_label])
+	results.append([text_result, token_label])
 
-	return result
-
-def extract_subjectivity(data, split_data):
-	concepts = get_concept(data)
-	sentiments = get_sentiment(data)
-
-	if len(concepts) > 0 and len(sentiments) > 0:
-		label = 'YES'
-	else:
-		label = 'NO'
-
-	result = []
-	result.append([' '.join(split_data), label])
-
-	return result
+	return results
 
 def produce_annotation(lines, split_line, extract_type='posneg'):
 	annotations = []
@@ -737,65 +376,57 @@ def produce_annotation(lines, split_line, extract_type='posneg'):
 	for index, line in enumerate(lines):
 		i += 1
 		try:
-			if extract_type == 'posneg':
-				text_result = extract_posneg(line, split_line[index])
-			elif extract_type == 'posneg-v2':
-				text_result = extract_posneg_v2(line, split_line[index])
-			elif extract_type == 'posneg-kukt':
-				text_result = extract_posneg_kukt(line, split_line[index])
-			elif extract_type == 'rel-c':
-				text_result = extract_relation_c(line, split_line[index])
-			elif extract_type == 'rel-s':
-				text_result = extract_relation_s(line, split_line[index])
-			elif extract_type == 'token-c':
-				text_result = extract_token_c(line, split_line[index])
-			elif extract_type == 'token-c-v2':
-				text_result = extract_token_c_v2(line, split_line[index])
-			elif extract_type == 'token-s':
-				text_result = extract_token_s(line, split_line[index])
-			elif extract_type == 'token-c-s':
-				text_result = extract_token_c_s(line, split_line[index])
-			elif extract_type == 'token-c-s-c':
-				text_result = extract_token_c_s_c(line, split_line[index])
+			if extract_type == 'rel-csug':
+				text_result = get_relation_csug(line, split_line[index])
+			elif extract_type == 'rel-cs':
+				text_result = get_relation_cs(line, split_line[index])
+			elif extract_type == 'rel-at':
+				text_result = get_relation_at(line, split_line[index])
+			elif extract_type == 'rel-to':
+				text_result = get_relation_to(line, split_line[index])
+			elif extract_type == 'rel-sug-res':
+				text_result = get_relation_sug_res(line, split_line[index])
+			elif extract_type == 'object':
+				text_result = extract_token(line, split_line[index], 'object')
+			elif extract_type == 'target':
+				text_result = extract_token(line, split_line[index], 'target')
+			elif extract_type == 'aspect':
+				text_result = extract_token(line, split_line[index], 'aspect')
 			elif extract_type == 'reason':
-				text_result = extract_reason(line, split_line[index])
+				text_result = extract_token(line, split_line[index], 'reason')
 			elif extract_type == 'suggestion':
-				text_result = extract_suggestion(line, split_line[index])
+				text_result = extract_token(line, split_line[index], 'suggestion')
 			elif extract_type == 'sug-reason':
 				text_result = extract_sug_reason(line, split_line[index])
-			elif extract_type == 'subjectivity':
-				text_result = extract_subjectivity(line, split_line[index])
+			elif extract_type == 'all-entity':
+				text_result = extract_all_entity(line, split_line[index])
 
 			for _text in text_result:
 				annotations.append(_text)
-		
+
 		except KeyError as error:
 			print(i, error)
 			print()
 	return annotations
 
-# ==============================================================================================================
-
-import argparse
-import csv
-
 parser = argparse.ArgumentParser()
-parser.add_argument('--e', type=str, required=True, help='posneg / rel-c / rel-s / token-c / token-c-v2 / token-s / token-c-s')
+parser.add_argument('--e', type=str, required=True)
 FLAGS, _ = parser.parse_known_args()
 
-files_test = glob.glob('data/new/*.tsv')
+files_test = []
+folders = glob.glob('data/absa/*/')
+for f in folders:
+	if f.split('\\')[1] != 'Kemendikbud':
+		files_test.extend(glob.glob(os.path.join(f, '*.tsv')))
 # files_test = ['test.tsv']
+# files_test = glob.glob('data/suggestion/aspect/*.tsv')
 
 text_test, lines_test, split_text = read_files(files_test)
 annotation_test = produce_annotation(lines_test, split_text, extract_type=FLAGS.e)
 
-file_target = 'result/cs-ku'
+file_target = 'result/rel-csug'
 # file_target = 'test'
 file_target += '.csv'
-
-pos = 0
-neg = 0
-mix = 0
 
 with open(file_target, 'w', newline='', encoding='utf-8') as f:
 	for package in annotation_test:
@@ -806,7 +437,4 @@ with open(file_target, 'w', newline='', encoding='utf-8') as f:
 			print(package)
 
 	f.close()
-	print(f'result save to {file_target}')
-	print(f'NEG: {neg}')
-	print(f'POS: {pos}')
-	print(f'MIX: {mix}')
+	print(f'results save to {file_target}')

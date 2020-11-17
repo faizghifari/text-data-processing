@@ -7,7 +7,7 @@
 2-4	371-372	,	_	_	_	_	_
 2-5	373-377	udah	_	_	_	_	_
 2-6	378-382	lama	_	_	_	_	_
-2-7	383-387	saya	_	_	_	_	_
+2-7	383-387	saya	_	reason[6]	*	[8_6]	_
 2-8	388-399	menggunakan	_	_	_	_	_
 2-9	400-408	aplikasi	_	_	_	_	_
 2-10	409-413	grab	_	konsep[8]	_	_	_
@@ -54,10 +54,10 @@
 1-9	54-59	gummy	_	_	_	_	_
 1-10	60-64	bear	_	_	_	_	_
 1-11	65-72	seperti	_	_	_	_	_
-1-12	73-82	sakatonik	_	konsep[4]	_	_	_
-1-13	83-86	ABC	_	konsep[5]	*	[4_5]	_
+1-12	73-82	sakatonik	_	aspect[4]	_	_	_
+1-13	83-86	ABC	_	aspect[5]	*	[4_5]	_
 1-14	87-93	karena	_	_	_	_	_
-1-15	94-98	rasa	_	konsep[1]	*	[5_1]	_
+1-15	94-98	rasa	_	aspect[1]	*	[5_1]	_
 1-16	99-102	nya	_	_	_	_	_
 1-17	103-107	yang	_	_	_	_	_
 1-18	108-115	terlalu	_	negatif[2]	*	[1_2]	_
@@ -74,15 +74,15 @@
 2-7	332-333	.	_	_	_	_	_
 2-8	334-337	Dan	_	_	_	_	_
 2-9	338-342	jadi	_	_	_	_	_
-2-10	343-349	driver	_	konsep[9]	*	2-11[8_9]	_
-2-11	350-355	gocar	_	konsep[8]	_	_	_
+2-10	343-349	driver	_	aspect[9]	*	2-11[8_9]	_
+2-11	350-355	gocar	_	target[8]	_	_	_
 2-12	356-360	pula	_	_	_	_	_
 2-13	361-362	.	_	_	_	_	_
 
 #Text=Dapet driver gocar galak amat .
-3-1	364-369	Dapet	_	_	_	_	_
-3-2	370-376	driver	_	konsep[11]	_	_	_
-3-3	377-382	gocar	_	konsep[12]	*	3-2[11_12]	_
+3-1	364-369	Dapet	_	object[10]	_	_	_
+3-2	370-376	driver	_	aspect[11]	_	_	_
+3-3	377-382	gocar	_	target[12]	*	3-2[11_12]	_
 3-4	383-388	galak	_	negatif[13]	*	3-3[12_13]	_
 3-5	389-393	amat	_	negatif[13]	_	_	_
 3-6	394-395	.	_	_	_	_	_
